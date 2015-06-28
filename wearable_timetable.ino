@@ -41,8 +41,9 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numpixels, pin, NEO_GRB + NEO_KHZ80
 // GEMMAに接続するときは0にする
 int serial = 1;
 
-// デバッグ（1にすると60倍速になる）
+// デバッグ（sp=60ULにすると60倍速になる）
 int debug = 1;
+unsigned int sp = 60UL;
 
 // その他（設定不要）
 
@@ -78,13 +79,15 @@ void loop() {
   pixels.show();
   pixels.setPixelColor(1, pixels.Color(0,0,0));
   pixels.show();
+  pixels.setPixelColor(2, pixels.Color(0,0,0));
+  pixels.show();
   
   t = millis() + t_ini;
 
-  h = (int)( t / (1000UL * 60UL * 60UL ) );
-  m = (int)( t / (1000UL * 60UL ) % 60UL );
-  s = (int)( t / 1000UL % 60UL );
-
+  h = (int)( t / (1000UL * 60UL * 60UL / sp) % 24UL );
+  m = (int)( t / (1000UL * 60UL /sp) % 60UL );
+  s = (int)( t / (1000UL /sp) % 60UL );
+  
   if( s != s_old ){
     if( serial == 1 ){
       Serial.print(h);
@@ -98,15 +101,10 @@ void loop() {
     s_old = s;
   }
   
-  if( debug == 1 ){
-    check_table2(m,s,0,0);//当駅
-    check_table2(m,s,1,2);//＋１（２分後）
-    check_table2(m,s,2,4);//＋２（４分後）
-  }else{
-    check_table2(h,m,0,0);//当駅
-    check_table2(h,m,1,2);//＋１（２分後）
-    check_table2(h,m,2,4);//＋２（４分後）
-  }
+  check_table2(h,m,0,0);//当駅
+  check_table2(h,m,1,2);//＋１駅（２分後）
+  check_table2(h,m,2,4);//＋２駅（４分後）
+
   delay(delayval);
 }
 
@@ -121,5 +119,4 @@ void check_table2(int h, int m, int p, int d){
     }
   }
 }
-
 
