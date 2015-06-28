@@ -6,6 +6,19 @@
 unsigned long start_hour = 9UL * 1000UL * 60UL * 60UL;
 unsigned long start_min = 9UL * 1000UL * 60UL;
 
+// NeoPixel
+
+int pin = 3; //GEMMA->1,Uno->3
+int numpixels = 3;
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numpixels, pin, NEO_GRB + NEO_KHZ800);
+
+// GEMMAに接続するときは0にする
+int serial = 1;
+
+// デバッグ（sp=60ULにすると60倍速になる）
+int debug = 1;
+unsigned int sp = 60UL;
+
 // time table
 // http://www.twr.co.jp/route/kokusai/timetable.html
 // ToDo:正しくは２駅前の東雲を入力。後で直す
@@ -32,19 +45,6 @@ int table[28][9] = {
   {9,19,30,36,44,51,58}//18
   };
 
-// NeoPixel
-
-int pin = 3;
-int numpixels = 3;
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numpixels, pin, NEO_GRB + NEO_KHZ800);
-
-// GEMMAに接続するときは0にする
-int serial = 1;
-
-// デバッグ（sp=60ULにすると60倍速になる）
-int debug = 1;
-unsigned int sp = 60UL;
-
 // その他（設定不要）
 
 unsigned long t = 0;
@@ -67,6 +67,13 @@ void setup() {
 
   pixels.begin(); // This initializes the NeoPixel library.
 
+  pixels.setPixelColor(0, pixels.Color(0,0,0));
+  pixels.show();
+  pixels.setPixelColor(1, pixels.Color(0,0,0));
+  pixels.show();
+  pixels.setPixelColor(2, pixels.Color(0,0,0));
+  pixels.show();
+
   if( serial == 1 ){
     Serial.begin(9600);    
   }
@@ -84,18 +91,18 @@ void loop() {
   
   t = millis() + t_ini;
 
-  h = (int)( t / (1000UL * 60UL * 60UL / sp) % 24UL );
+  h = (int)( t / (1000UL * 60UL * 60UL ) % 24UL );
   m = (int)( t / (1000UL * 60UL /sp) % 60UL );
   s = (int)( t / (1000UL /sp) % 60UL );
   
-  if( s != s_old ){
+  if( m != m_old ){
     if( serial == 1 ){
+      Serial.println();      
       Serial.print(h);
       Serial.print(":");
       Serial.print(m);
       Serial.print(":");
       Serial.print(s);
-      Serial.println();      
     }
     m_old = m;
     s_old = s;
@@ -114,7 +121,9 @@ void check_table2(int h, int m, int p, int d){
       pixels.setPixelColor(p, pixels.Color(100,100,100));
       pixels.show();
       if( serial == 1 ){
-        Serial.println("train");        
+        Serial.print("[");        
+        Serial.print(p);
+        Serial.print("]");        
       }
     }
   }
