@@ -8,7 +8,7 @@ unsigned long start_min = 9UL * 1000UL * 60UL;
 
 // NeoPixel
 
-int pin = 3; //GEMMA->1,Uno->3
+int pin = 3; //GEMMA->1,LilyPad->3
 int numpixels = 3;
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numpixels, pin, NEO_GRB + NEO_KHZ800);
 
