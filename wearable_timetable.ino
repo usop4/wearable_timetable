@@ -2,7 +2,7 @@
 #include <avr/power.h>
 
 // デバッグ（sp=60ULにすると60倍速になる。通常はsp = 1UL）
-unsigned int sp = 1UL;
+unsigned int sp = 60UL;
 
 // set time
 // 開始時間を設定
@@ -11,9 +11,8 @@ unsigned long start_h = 9UL * 1000UL * 60UL * 60UL;
 unsigned long start_m = 2UL * 1000UL * 60UL;
 unsigned long t = 0;
 unsigned long t_ini = start_h + start_m;
-unsigned long t_old = 0;
 
-int h,m,s,ms;//hour,minute,second
+int h, m, s, ms;//hour,minute,second
 int delayval = 50;
 
 // NeoPixel
@@ -49,7 +48,7 @@ int table[28][9] = {
   };
 
 // 駅と駅の間の時間差
-int station[5] = {0,2,4,6,8};
+int station[] = {0,2,4,6,8};
 
 void setup() {
 
@@ -63,12 +62,14 @@ void setup() {
 
 void loop() {
 
-  t = millis() + t_ini;
+  t = millis() * sp + t_ini;
 
   h = (int)( t / (1000UL * 60UL * 60UL ) % 24UL );
-  m = (int)( t / (1000UL * 60UL /sp) % 60UL );
-  s = (int)( t / (1000UL /sp) % 60UL );
-  ms = (int)( t  % 1000UL );
+  m = (int)( t / (1000UL * 60UL ) % 60UL );
+  s = (int)( millis() / (1000UL ) % 60UL );
+  ms = (int)( millis()  % 1000UL );
+  //s = (int)( t / (1000UL ) % 60UL );
+  //ms = (int)( t  % 1000UL );
 
   for( int i = 0; i < numpixels; i++ ){
     if( s % 5 == i ){
@@ -91,8 +92,13 @@ void check_table2(int number){
     // 時刻表をサーチし、最も近づいている電車と駅の距離（時間差）を明るさにする
     int bright = 60*2 - abs((table[h][i]+station[number])*60 - (m*60+s));
     if( bright > 0 ){
-      pixels.setPixelColor(number, pixels.Color(bright,0,0));
+      pixels.setPixelColor(number, pixels.Color(curve(bright),0,0));
+      pixels.show();
     }
   }
+}
+
+int curve(int bright){
+  return bright;
 }
 
