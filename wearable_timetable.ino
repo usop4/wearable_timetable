@@ -6,6 +6,11 @@
 
 unsigned long start_hour = 9UL * 1000UL * 60UL * 60UL;
 unsigned long start_min = 9UL * 1000UL * 60UL;
+unsigned long t = 0;
+unsigned long t_ini = start_hour + start_min;
+unsigned long t_old = 0;
+
+int delayval = 30;
 
 // NeoPixel
 
@@ -13,12 +18,8 @@ int pin = 3; //GEMMA->1,LilyPad->3
 int numpixels = 5;
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numpixels, pin, NEO_GRB + NEO_KHZ800);
 
-// GEMMAに接続するときは0にする
-int serial = 1;
-
-// デバッグ（sp=60ULにすると60倍速になる）
-int debug = 1;
-unsigned int sp = 1UL;
+// デバッグ（sp=60ULにすると60倍速になる。通常はsp = 1UL）
+unsigned int sp = 10UL;
 
 // time table
 // http://www.twr.co.jp/route/kokusai/timetable.html
@@ -46,19 +47,6 @@ int table[28][9] = {
   {9,19,30,36,44,51,58}//18
   };
 
-// その他（設定不要）
-
-unsigned long t = 0;
-unsigned long t_ini = start_hour + start_min;
-unsigned long t_old = 0;
-
-int h = 0;
-int m = 0;
-int s = 0;
-int m_old = 0;
-int s_old = 0;
-
-int delayval = 30;
 
 void setup() {
 
@@ -68,17 +56,15 @@ void setup() {
 
   pixels.begin(); // This initializes the NeoPixel library.
 
-  if( serial == 1 ){
-    Serial.begin(9600);    
-  }
-
 }
 
 void loop() {
 
-  h = (int)( t / (1000UL * 60UL * 60UL ) % 24UL );
-  m = (int)( t / (1000UL * 60UL /sp) % 60UL );
-  s = (int)( t / (1000UL /sp) % 60UL );
+  t = millis() + t_ini;
+
+  int h = (int)( t / (1000UL * 60UL * 60UL ) % 24UL );
+  int m = (int)( t / (1000UL * 60UL /sp) % 60UL );
+  int s = (int)( t / (1000UL /sp) % 60UL );
 
   for( int i = 0; i < numpixels; i++ ){
     if( s % 5 == i ){
@@ -88,21 +74,6 @@ void loop() {
       pixels.setPixelColor( i, pixels.Color(0,0,0));
       pixels.show();      
     }
-  }
-  
-  t = millis() + t_ini;
-  
-  if( m != m_old ){
-    if( serial == 1 ){
-      Serial.println();      
-      Serial.print(h);
-      Serial.print(":");
-      Serial.print(m);
-      Serial.print(":");
-      Serial.print(s);
-    }
-    m_old = m;
-    s_old = s;
   }
   
   check_table2(h,m,0,0);//当駅
@@ -119,11 +90,6 @@ void check_table2(int h, int m, int p, int d){
     if( table[h][i]+d == m ){
       pixels.setPixelColor(p, pixels.Color(10,0,0));
       pixels.show();
-      if( serial == 1 ){
-        Serial.print("[");        
-        Serial.print(p);
-        Serial.print("]");        
-      }
     }
   }
 }
