@@ -1,25 +1,26 @@
 #include <Adafruit_NeoPixel.h>
 #include <avr/power.h>
 
+// デバッグ（sp=60ULにすると60倍速になる。通常はsp = 1UL）
+unsigned int sp = 1UL;
+
 // set time
 // 開始時間を設定
 
-unsigned long start_hour = 9UL * 1000UL * 60UL * 60UL;
-unsigned long start_min = 9UL * 1000UL * 60UL;
+unsigned long start_h = 9UL * 1000UL * 60UL * 60UL;
+unsigned long start_m = 2UL * 1000UL * 60UL;
 unsigned long t = 0;
-unsigned long t_ini = start_hour + start_min;
+unsigned long t_ini = start_h + start_m;
 unsigned long t_old = 0;
 
-int delayval = 30;
+int h,m,s,ms;//hour,minute,second
+int delayval = 50;
 
 // NeoPixel
 
 int pin = 3; //GEMMA->1,LilyPad->3
 int numpixels = 5;
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numpixels, pin, NEO_GRB + NEO_KHZ800);
-
-// デバッグ（sp=60ULにすると60倍速になる。通常はsp = 1UL）
-unsigned int sp = 10UL;
 
 // time table
 // http://www.twr.co.jp/route/kokusai/timetable.html
@@ -47,6 +48,8 @@ int table[28][9] = {
   {9,19,30,36,44,51,58}//18
   };
 
+// 駅と駅の間の時間差
+int station[5] = {0,2,4,6,8};
 
 void setup() {
 
@@ -62,34 +65,33 @@ void loop() {
 
   t = millis() + t_ini;
 
-  int h = (int)( t / (1000UL * 60UL * 60UL ) % 24UL );
-  int m = (int)( t / (1000UL * 60UL /sp) % 60UL );
-  int s = (int)( t / (1000UL /sp) % 60UL );
+  h = (int)( t / (1000UL * 60UL * 60UL ) % 24UL );
+  m = (int)( t / (1000UL * 60UL /sp) % 60UL );
+  s = (int)( t / (1000UL /sp) % 60UL );
+  ms = (int)( t  % 1000UL );
 
   for( int i = 0; i < numpixels; i++ ){
     if( s % 5 == i ){
-      pixels.setPixelColor( i, pixels.Color(0,0,5));
+      // 電車の進行方向を青で表示
+      pixels.setPixelColor( i, pixels.Color(0,ms/30,ms/30));
       pixels.show();
     }else{
       pixels.setPixelColor( i, pixels.Color(0,0,0));
       pixels.show();      
+      // 電車の近づき具合を赤で表示
+      check_table2(i);
     }
   }
-  
-  check_table2(h,m,0,0);//当駅
-  check_table2(h,m,1,2);//＋１駅（２分後）
-  check_table2(h,m,2,4);//＋２駅（４分後）
-  check_table2(h,m,3,6);//＋３駅（６分後）
-  check_table2(h,m,4,8);//＋４駅（８分後）
 
   delay(delayval);
 }
 
-void check_table2(int h, int m, int p, int d){
+void check_table2(int number){
   for(int i = 0; i < 9; i++ ){
-    if( table[h][i]+d == m ){
-      pixels.setPixelColor(p, pixels.Color(10,0,0));
-      pixels.show();
+    // 時刻表をサーチし、最も近づいている電車と駅の距離（時間差）を明るさにする
+    int bright = 60*2 - abs((table[h][i]+station[number])*60 - (m*60+s));
+    if( bright > 0 ){
+      pixels.setPixelColor(number, pixels.Color(bright,0,0));
     }
   }
 }
