@@ -18,7 +18,7 @@ int delayval = 50;
 // NeoPixel
 
 int pin = 1; //GEMMA->1,LilyPad->3
-int numpixels = 2;
+int numpixels = 5;
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numpixels, pin, NEO_GRB + NEO_KHZ800);
 
 // time table
@@ -75,7 +75,6 @@ void loop() {
     if( s % 5 == i ){
       // 電車の進行方向を青で表示
       pixels.setPixelColor( i, pixels.Color(0,ms/30,ms/30));
-      //pixels.setPixelColor( i, pixels.Color(0,0,0));
       pixels.show();
     }else{
       pixels.setPixelColor( i, pixels.Color(0,0,0));
