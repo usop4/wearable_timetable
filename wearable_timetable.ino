@@ -17,8 +17,8 @@ int delayval = 50;
 
 // NeoPixel
 
-int pin = 3; //GEMMA->1,LilyPad->3
-int numpixels = 5;
+int pin = 1; //GEMMA->1,LilyPad->3
+int numpixels = 2;
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numpixels, pin, NEO_GRB + NEO_KHZ800);
 
 // time table
@@ -75,6 +75,7 @@ void loop() {
     if( s % 5 == i ){
       // 電車の進行方向を青で表示
       pixels.setPixelColor( i, pixels.Color(0,ms/30,ms/30));
+      //pixels.setPixelColor( i, pixels.Color(0,0,0));
       pixels.show();
     }else{
       pixels.setPixelColor( i, pixels.Color(0,0,0));
@@ -88,9 +89,14 @@ void loop() {
 }
 
 void check_table2(int number){
+
+  // GEMMAで二次元配列が動かないためダミー  
+  int table[9] = {9,19,30,36,44,51,58};
+
   for(int i = 0; i < 9; i++ ){
     // 時刻表をサーチし、最も近づいている電車と駅の距離（時間差）を明るさにする
-    int bright = 60*2 - abs((table[h][i]+station[number])*60 - (m*60+s));
+    //int bright = 60*2 - abs((table[h][i]+station[number])*60 - (m*60+s));
+    int bright = 60*2 - abs((table[i]+station[number])*60 - (m*60+s));
     if( bright > 0 ){
       pixels.setPixelColor(number, pixels.Color(curve(bright),0,0));
       pixels.show();
@@ -99,6 +105,6 @@ void check_table2(int number){
 }
 
 int curve(int bright){
-  return bright;
+  return bright*bright/120;
 }
 
